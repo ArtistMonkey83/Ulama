@@ -1,5 +1,5 @@
 #include <stdint.h>
-/*
+
 #define NOTE_C4 262
 #define NOTE_CS4 277
 #define NOTE_D4 294
@@ -13,7 +13,7 @@
 #define NOTE_AS4 466
 #define NOTE_B4 494
 #define NOTE_C5 523
-*/
+
 
 void tone(int speaker, int note);
 void noTone(int speaker);
