@@ -1,21 +1,11 @@
 #include <stdint.h>
 #include "PLL.h"
 #include "SysTick.h"
+#include "GPIO.h"
 #include "Melody.h"
 #include "LED.h"
+#include "LCD.h"
 #include "tm4c123gh6pm.h"
-
-// The Layout of Ports on the Tiva TM4C123G
-//		b31 ... b6 || b5  b4  b3  b2  b1  b0
-//     RESERVED	 || F   E   D   C   B   A
-//         0x...    20  10  08  04  02  01
-
-#define PA 0x01		//SPI: Pin2 SCK[0], Pin3 CS[0], Pin4 MISO[0], Pin5 MOSI[0] I2C: Pin6 SCL[1], Pin7 SDA[1]		
-#define PB 0x02		//HW Serial: Pin0 Rx[1], Pin1 Tx[1] I2C: Pin2 SCL[0], Pin3 SDA[0] SPI: Pin4 SCK[2], Pin5 CS[2], Pin6 MISO[2], Pin7 MOSI[2]		
-#define PC 0x04		//HW Serial: Pin4 Rx[1], Pin5 Tx[1] Pin6 Rx[3], Pin7 Tx[3]		
-#define PD 0x08		//I2C: Pin0 SCL[3], Pin1 SDA[3] SPI: Pin0 SCK[3], Pin1 CS[3], Pin2 MISO[3], Pin3 MOSI[3] HW Serial: Pin6 Rx[2], Pin7 Tx[2]		
-#define PE 0x10		//HW Serial: Pin0 Rx[7], Pin1 Tx[7] Analog: Pin2 & Pin3 I2C: Pin4 SCL[2], Pin5 SDA[2]
-#define PF 0x20		//SPI: Pin0 MISO[1], Pin1 MOSI[1], Pin2 SCK[1], Pin3 CS[1]
 
 int goal();					//Fucntion to determine state of goals, was one made==1 or no goal==0
 int pwrDwn();				//Function to determine if the game should perform power down protocols
@@ -34,6 +24,8 @@ int GAMETIMER = 0;	//Global variable for how much time is left in the currrent g
 int TIMEOUT = 0;		//Global variable for the timeout signal
 int PLAYER = 0; 		//Global variable to hold the current player, 0 == player 1, 1 == player 2
 int TURNS = 0;			//Global variable to hold the number of turns taken
+int DELAYI = 0;			//Global variable to hold the index for loop one
+int DELAYJ = 0;			//Global variable to hold the index for loop two
 
 int main(){
 		char player1[9] = {'P','l','a','y','e','r',' ','1','\0'}; //c-string to hold player1 name
@@ -43,20 +35,9 @@ int main(){
 	
 		PLL_Init();			/* call the function to initialize PLL*/
 		SysTick_Init(); /* call the function to initialize SysTick*/
-	
-/* enable clock to GPIOA */
-/* enable clock to GPIO B and C */
-/* PortB, Pin0 == Goal, Green LEDs flash when button pushed OUTPUT*/
-/* PortB, Pin1 == On/off, Red LEDs flash when switch activated/deactivated OUTPUT*/
-/* PortC, Pin4 simulation of displacement sensor as a switch INPUT*/
-/* PortC, Pin7 controls speaker tone OUTPUT*/
-
-		SYSCTL_RCGCGPIO_R = PB | PC;	/* Enable PORTB & PORTC clock*/
-		GPIO_PORTB_DIR_R = 0x03;			/* set PORTB pins 0 & 1 as digital OUTPUT pins*/
-		GPIO_PORTB_DEN_R = 0x03;			/* Enable PORTB pins*/
-		
-		GPIO_PORTC_DIR_R = 0x80;			/* set PORTC pin4 as INPUT (turning on switch simulating displacement sensor) and 7 as OUTPUT (speaker)*/
-		GPIO_PORTC_DEN_R = 0x90;			/* Enable PORTC pins*/
+		PortB_Init();		/* call the function to initialize Port B*/
+		PortC_Init();		/* call the function to initialize Port C*/
+		PortF_Init();		/* call the function to initialize Port F*/
 						
 		LEDon(); 			/* Turn on the LEDs*/
 		welcome();		/* Display Welcome Message on screen*/
